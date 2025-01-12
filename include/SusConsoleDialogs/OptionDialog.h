@@ -130,7 +130,7 @@ public:
         std::vector<DialogOption> options,
         bool selectUsingIndex = false,
         bool clearConsoleIfInvalidAnswer = false,
-        bool clearConsoleAtStart = false,
+        bool clearConsoleAtStart = true,
         ListOrder order = Normal
     ) {
         OptionDialog dialog;
@@ -143,7 +143,7 @@ public:
         std::vector<DialogOption> options,
         bool selectUsingIndex = false,
         bool clearConsoleIfInvalidAnswer = false,
-        bool clearConsoleAtStart = false,
+        bool clearConsoleAtStart = true,
         ListOrder order = Normal
     ) {
         auto dialog = std::make_unique<OptionDialog>();

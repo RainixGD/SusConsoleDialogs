@@ -14,3 +14,4 @@
 #include "./InputDialog.h"
 #include "./OptionDialog.h"
 #include "./MessageDialog.h"
+#include "./YesNoDialog.h"
