@@ -20,7 +20,6 @@ private:
             return true;
         }
         else {
-            static_assert("Unsupported type for InputDialog");
             return false;
         }
     }
@@ -50,16 +49,16 @@ public:
 
     static T run(const std::string& questionMessage, bool clearConsoleIfInvalidAnswer = false, bool clearConsoleAtStart = false) {
         InputDialog dialog;
-        if (!dialog.init(questionMessage, clearConsoleIfInvalidAnswer, clearConsoleAtStart)) throw std::runtime_error("InputDialog: failed to initialize inline dialog");
+        if (!dialog.init(questionMessage, clearConsoleIfInvalidAnswer, clearConsoleAtStart))
+            throw std::runtime_error("InputDialog: failed to initialize inline dialog");
         return dialog.run();
     }
 
-    static InputDialog* create(const std::string& questionMessage, bool clearConsoleIfInvalidAnswer = false, bool clearConsoleAtStart = false) {
-        auto dialog = new InputDialog();
-        if (dialog && dialog->init(questionMessage, clearConsoleIfInvalidAnswer, clearConsoleAtStart)) {
+    static std::unique_ptr<InputDialog> create(const std::string& questionMessage, bool clearConsoleIfInvalidAnswer = false, bool clearConsoleAtStart = false) {
+        auto dialog = std::make_unique<InputDialog>();
+        if (dialog->init(questionMessage, clearConsoleIfInvalidAnswer, clearConsoleAtStart)) {
             return dialog;
         }
-        delete dialog;
         return nullptr;
     }
 };

@@ -1,31 +1,71 @@
 struct DialogOption {
-    std::string_view key;
-    std::string_view description;
+    std::string key;
+    std::string description;
 
-    DialogOption(std::string_view key, std::string_view description = "")
-        : key(key), description(description) {}
+    DialogOption(std::string key, std::string description = "")
+        : key(std::move(key)), description(std::move(description)) {}
 };
 
 class OptionDialog : public Dialog {
+public:
+    enum ListOrder {
+        Normal,
+        Alphabetical,
+        Reverse,
+        AlphabeticalAndReverse
+    };
 private:
     bool clearConsoleIfInvalidAnswer;
     bool selectUsingIndex;
     std::vector<DialogOption> options;
 
     void printList() const {
+        size_t maxKeyLength = 0;
+        for (const auto& option : options) {
+            maxKeyLength = std::max(maxKeyLength, option.key.size());
+        }
+
         for (size_t i = 0; i < options.size(); i++) {
-            if (selectUsingIndex)
-                std::cout << "(" << i << ") " << options[i].key << (options[i].description.size() > 0 ? std::string("\t- ") + std::string(options[i].description) : "") << std::endl;
-            else
-                std::cout << options[i].key << (options[i].description.size() > 0 ? std::string("\t- ") + std::string(options[i].description) : "") << std::endl;
+            std::cout << std::left;
+
+            if (selectUsingIndex) {
+                std::cout << "(" << i << ") "
+                          << std::setw(static_cast<int>(maxKeyLength + 2))
+                          << options[i].key
+                          << (!options[i].description.empty() ? " - " + options[i].description : "")
+                          << std::endl;
+            } else {
+                std::cout << std::setw(static_cast<int>(maxKeyLength + 2))
+                          << options[i].key
+                          << (!options[i].description.empty() ? " - " + options[i].description : "")
+                          << std::endl;
+            }
         }
     }
 
-    bool init(const std::string& questionMessage, std::vector<DialogOption> options, bool selectUsingIndex, bool clearConsoleIfInvalidAnswer, bool clearConsoleAtStart) {
+    bool init(
+        const std::string& questionMessage,
+        std::vector<DialogOption> options,
+        bool selectUsingIndex,
+        bool clearConsoleIfInvalidAnswer,
+        bool clearConsoleAtStart,
+        ListOrder order
+    ) {
         if (!Dialog::init(questionMessage, clearConsoleAtStart)) return false;
         this->clearConsoleIfInvalidAnswer = clearConsoleIfInvalidAnswer;
-        this->options = options;
         this->selectUsingIndex = selectUsingIndex;
+
+        this->options = options;
+
+
+        if (order == Alphabetical || order == AlphabeticalAndReverse)
+            std::sort(this->options.begin(), this->options.end(), [](const DialogOption& a, const DialogOption& b) {
+                return a.key < b.key;
+            });
+
+        if (order == Reverse || order == AlphabeticalAndReverse)
+            std::reverse(this->options.begin(), this->options.end());
+
         return true;
     }
 
@@ -52,6 +92,7 @@ private:
     }
 
 public:
+
     int run() {
         Dialog::run();
         printList();
@@ -84,18 +125,31 @@ public:
         }
     }
 
-    static int run(const std::string& questionMessage, std::vector<DialogOption> options, bool selectUsingIndex = false, bool clearConsoleIfInvalidAnswer = false, bool clearConsoleAtStart = false) {
+    static int run(
+        const std::string& questionMessage,
+        std::vector<DialogOption> options,
+        bool selectUsingIndex = false,
+        bool clearConsoleIfInvalidAnswer = false,
+        bool clearConsoleAtStart = false,
+        ListOrder order = Normal
+    ) {
         OptionDialog dialog;
-        if (!dialog.init(questionMessage, options, selectUsingIndex, clearConsoleIfInvalidAnswer, clearConsoleAtStart)) throw std::runtime_error("OptionDialog: failed to initialize inline dialog");
+        if (!dialog.init(questionMessage, options, selectUsingIndex, clearConsoleIfInvalidAnswer, clearConsoleAtStart, order)) throw std::runtime_error("OptionDialog: failed to initialize inline dialog");
         return dialog.run();
     }
 
-    static OptionDialog* create(const std::string& questionMessage, std::vector<DialogOption> options, bool selectUsingIndex = false, bool clearConsoleIfInvalidAnswer = false, bool clearConsoleAtStart = false) {
-        auto dialog = new OptionDialog();
-        if (dialog && dialog->init(questionMessage, options, selectUsingIndex, clearConsoleIfInvalidAnswer, clearConsoleAtStart)) {
+    static std::unique_ptr<OptionDialog> create(
+        const std::string& questionMessage,
+        std::vector<DialogOption> options,
+        bool selectUsingIndex = false,
+        bool clearConsoleIfInvalidAnswer = false,
+        bool clearConsoleAtStart = false,
+        ListOrder order = Normal
+    ) {
+        auto dialog = std::make_unique<OptionDialog>();
+        if (dialog && dialog->init(questionMessage, options, selectUsingIndex, clearConsoleIfInvalidAnswer, clearConsoleAtStart, order)) {
             return dialog;
         }
-        delete dialog;
         return nullptr;
     }
 };

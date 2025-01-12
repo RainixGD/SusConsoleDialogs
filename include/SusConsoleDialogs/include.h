@@ -8,7 +8,9 @@
 #include <vector>
 #include <optional>
 #include <algorithm>
+#include <iomanip>
 
 #include "./Dialog.h"
 #include "./InputDialog.h"
 #include "./OptionDialog.h"
+#include "./MessageDialog.h"

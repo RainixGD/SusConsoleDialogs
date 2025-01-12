@@ -19,8 +19,6 @@ int main() {
 
     std::cout << "You selected the fruit at index: " << selectedFruitIndex << std::endl;
 
-    delete selectFruitDialog;
-
     while (true) {}
 
     return 0;

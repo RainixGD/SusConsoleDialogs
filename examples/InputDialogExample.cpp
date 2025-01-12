@@ -10,8 +10,6 @@ int main() {
     int reusedInputNumber = numberInputDialog->run();
     std::cout << "You entered the integer again: " << reusedInputNumber << std::endl;
 
-    delete numberInputDialog;
-
     auto stringInput = InputDialog<std::string>::run("Please enter a string:");
     std::cout << "You entered the string: " << stringInput << std::endl;
 
