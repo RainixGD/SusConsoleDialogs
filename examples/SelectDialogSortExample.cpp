@@ -22,10 +22,10 @@ int main() {
         {"lcm", "Find the least common multiple of two numbers."}
     };
 
-    auto operation = OptionDialog::run("Select math operation (alphabetical):", mathOperations, true, false, false, OptionDialog::Alphabetical);
+    auto operation = OptionDialog::run("Select math operation (alphabetical):", mathOperations, OptionDialog::ClearConsoleAtStart | OptionDialog::SortAlphabetical);
     std::cout << operation << std::endl;
 
-    auto operation2 = OptionDialog::run("Select math operation (reverse):", mathOperations, false, false, false, OptionDialog::Reverse);
+    auto operation2 = OptionDialog::run("Select math operation (reverse):", mathOperations, OptionDialog::ReversedOrder | OptionDialog::SelectUsingIndex, OptionDialog::ClearConsoleAtStart);
     std::cout << operation2 << std::endl;
 
     while (true) {}

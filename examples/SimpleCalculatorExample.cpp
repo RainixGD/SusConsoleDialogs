@@ -10,15 +10,15 @@ int main() {
 
     MessageDialog::run("Hey! Welcome in my calculator! It's a good example program to demonstrate the dialogs library");
 
-    auto readFloatArgDialog = InputDialog<float>::create("Enter argument:", false, true);
-    auto readIntArgDialog = InputDialog<int>::create("Enter argument:", false, true);
-
+    auto readFloatArgDialog = InputDialog<float>::create("Enter argument:", Dialog::ClearConsoleAtStart);
+    auto readIntArgDialog = InputDialog<int>::create("Enter argument:", Dialog::ClearConsoleAtStart);
+    
     while (true) {
-        auto operation = OptionDialog::run("Select the operation you want to use:", operationOptions, true, false, true, OptionDialog::Normal);
+        auto operation = OptionDialog::run("Select the operation you want to use:", operationOptions, OptionDialog::ClearConsoleAtStart | OptionDialog::SelectUsingIndex);
         
         if (operation == operationOptions.size() - 1) break;
 
-        auto useFloatNumbers = YesNoDialog::run("Do you want to use float numbers?", false, true);
+        auto useFloatNumbers = YesNoDialog::run("Do you want to use float numbers?", Dialog::ClearConsoleAtStart | Dialog::RepeatQuestionIfInvalidAnswer);
 
         if (useFloatNumbers) {
             float arg1 = readFloatArgDialog->run();

@@ -2,7 +2,7 @@
 #include <iostream>
 
 int main() {
-    auto evenNumber = InputDialog<int>::run("Enter an even number:", false, true, [](int result) {
+    auto evenNumber = InputDialog<int>::run("Enter an even number:", InputDialog<int>::ClearConsoleAtStart, [](int result) {
         return result % 2 == 0;
     });
 

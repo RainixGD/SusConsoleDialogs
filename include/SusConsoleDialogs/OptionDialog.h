@@ -8,14 +8,13 @@ struct DialogOption {
 
 class OptionDialog : public Dialog {
 public:
-    enum ListOrder {
-        Normal,
-        Alphabetical,
-        Reverse,
-        AlphabeticalAndReverse
+    enum Settings {
+        Nothing = 0,
+        SelectUsingIndex = 1 << 2,
+        SortAlphabetical = 1 << 3,
+        ReversedOrder = 1 << 4
     };
 private:
-    bool clearConsoleIfInvalidAnswer;
     bool selectUsingIndex;
     std::vector<DialogOption> options;
 
@@ -46,24 +45,19 @@ private:
     bool init(
         const std::string& questionMessage,
         std::vector<DialogOption> options,
-        bool selectUsingIndex,
-        bool clearConsoleIfInvalidAnswer,
-        bool clearConsoleAtStart,
-        ListOrder order
+        int settings,
+        int outputOptions
     ) {
-        if (!Dialog::init(questionMessage, clearConsoleAtStart)) return false;
-        this->clearConsoleIfInvalidAnswer = clearConsoleIfInvalidAnswer;
-        this->selectUsingIndex = selectUsingIndex;
-
+        if (!Dialog::init(questionMessage, outputOptions)) return false;
+        this->selectUsingIndex = settings & SelectUsingIndex;
         this->options = options;
 
-
-        if (order == Alphabetical || order == AlphabeticalAndReverse)
+        if (settings & SortAlphabetical)
             std::sort(this->options.begin(), this->options.end(), [](const DialogOption& a, const DialogOption& b) {
                 return a.key < b.key;
             });
 
-        if (order == Reverse || order == AlphabeticalAndReverse)
+        if (settings & ReversedOrder)
             std::reverse(this->options.begin(), this->options.end());
 
         return true;
@@ -92,19 +86,18 @@ private:
     }
 
 public:
+    virtual void print() override {
+        std::cout << questionMessage << std::endl;
+        printList();
+    }
 
     int run() {
-        Dialog::run();
-        printList();
+        if (clearConsoleAtStart) clearConsole();
+        print();
 
         std::string input;
 
         while (true) {
-            if (clearConsoleIfInvalidAnswer) {
-                Dialog::clearConsole();
-                Dialog::run();
-                printList();
-            }
             std::cout << "> ";
             std::getline(std::cin, input);
 
@@ -113,14 +106,14 @@ public:
                 if (index.has_value() && index >= 0 && index < options.size()) {
                     return index.value();
                 }
-                std::cout << "Invalid index. Please enter a number between 0 and " << options.size() - 1 << "." << std::endl;
+                runOnWrongAnswer();
             }
             else {
                 auto index = findByKey(input);
                 if (index.has_value()) {
                     return index.value();
                 }
-                std::cout << "Invalid option. Please enter a valid key." << std::endl;
+                runOnWrongAnswer();
             }
         }
     }
@@ -128,26 +121,22 @@ public:
     static int run(
         const std::string& questionMessage,
         std::vector<DialogOption> options,
-        bool selectUsingIndex = false,
-        bool clearConsoleIfInvalidAnswer = false,
-        bool clearConsoleAtStart = true,
-        ListOrder order = Normal
+        int settings = Nothing,
+        int outputOptions = ClearConsoleAtStart
     ) {
         OptionDialog dialog;
-        if (!dialog.init(questionMessage, options, selectUsingIndex, clearConsoleIfInvalidAnswer, clearConsoleAtStart, order)) throw std::runtime_error("OptionDialog: failed to initialize inline dialog");
+        if (!dialog.init(questionMessage, options, settings, outputOptions)) throw std::runtime_error("OptionDialog: failed to initialize inline dialog");
         return dialog.run();
     }
 
-    static std::unique_ptr<OptionDialog> create(
+    static OptionDialog* create(
         const std::string& questionMessage,
         std::vector<DialogOption> options,
-        bool selectUsingIndex = false,
-        bool clearConsoleIfInvalidAnswer = false,
-        bool clearConsoleAtStart = true,
-        ListOrder order = Normal
+        int settings = Nothing,
+        int outputOptions = ClearConsoleAtStart
     ) {
-        auto dialog = std::make_unique<OptionDialog>();
-        if (dialog && dialog->init(questionMessage, options, selectUsingIndex, clearConsoleIfInvalidAnswer, clearConsoleAtStart, order)) {
+        auto dialog = new OptionDialog();
+        if (dialog && dialog->init(questionMessage, options, settings, outputOptions)) {
             return dialog;
         }
         return nullptr;

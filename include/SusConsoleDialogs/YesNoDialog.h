@@ -1,25 +1,22 @@
 class YesNoDialog : public Dialog {
 private:
-    bool clearConsoleIfInvalidAnswer;
-
-    bool init(const std::string& questionMessage, bool clearConsoleIfInvalidAnswer, bool clearConsoleAtStart) {
-        if (!Dialog::init(questionMessage, clearConsoleAtStart)) return false;
-        this->clearConsoleIfInvalidAnswer = clearConsoleIfInvalidAnswer;
+    bool init(const std::string& questionMessage, int outputOptions) {
+        if (!Dialog::init(questionMessage, outputOptions)) return false;
         return true;
     }
 
 public:
-    bool run() {
-        Dialog::run();
+    virtual void print() override {
+        std::cout << questionMessage << std::endl;
         std::cout << "(Y/N)" << std::endl;
+    }
+
+    bool run() {
+        if (clearConsoleAtStart) clearConsole();
+        print();
         std::string input;
 
         while (true) {
-            if (clearConsoleIfInvalidAnswer) {
-                Dialog::clearConsole();
-                Dialog::run();
-                std::cout << "(Y/N)" << std::endl;
-            }
             std::cout << "> ";
             std::getline(std::cin, input);
 
@@ -27,21 +24,22 @@ public:
                 return true;
             else if (input == "N" || input == "n")
                 return false;
-            else
-                std::cout << "Invalid input. Please try again." << std::endl;
+            else {
+                runOnWrongAnswer();
+            }
         }
     }
 
-    static bool run(const std::string& questionMessage, bool clearConsoleIfInvalidAnswer = false, bool clearConsoleAtStart = true) {
+    static bool run(const std::string& questionMessage, int outputOptions = ClearConsoleAtStart) {
         YesNoDialog dialog;
-        if (!dialog.init(questionMessage, clearConsoleIfInvalidAnswer, clearConsoleAtStart))
+        if (!dialog.init(questionMessage, outputOptions))
             throw std::runtime_error("InputDialog: failed to initialize inline dialog");
         return dialog.run();
     }
 
-    static std::unique_ptr<YesNoDialog> create(const std::string& questionMessage, bool clearConsoleIfInvalidAnswer = false, bool clearConsoleAtStart = true) {
-        auto dialog = std::make_unique<YesNoDialog>();
-        if (dialog->init(questionMessage, clearConsoleIfInvalidAnswer, clearConsoleAtStart)) {
+    static YesNoDialog* create(const std::string& questionMessage, int outputOptions = ClearConsoleAtStart) {
+        auto dialog = new YesNoDialog();
+        if (dialog->init(questionMessage, outputOptions)) {
             return dialog;
         }
         return nullptr;

@@ -1,27 +1,34 @@
 class MessageDialog : public Dialog {
 private:
-    bool init(const std::string& message, bool clearConsoleAtStart) {
-        return Dialog::init(message, clearConsoleAtStart);
+
+    bool init(const std::string& questionMessage, int outputOptions) {
+        if (!Dialog::init(questionMessage, outputOptions)) return false;
+        return true;
     }
 
 public:
-    void run() {
-        Dialog::run();
+    virtual void print() override {
+        std::cout << questionMessage << std::endl;
         std::cout << "(Press enter to continue)" << std::endl;
+    }
+
+    void run() {
+        if (clearConsoleAtStart) clearConsole();
+        print();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
 
-    static void run(const std::string& message, bool clearConsoleAtStart = true) {
+    static void run(const std::string& message, int outputOptions = ClearConsoleAtStart) {
         MessageDialog dialog;
-        if (!dialog.init(message, clearConsoleAtStart)) {
+        if (!dialog.init(message, outputOptions)) {
             throw std::runtime_error("MessageDialog: failed to initialize inline dialog");
         }
         dialog.run();
     }
 
-    static std::unique_ptr<MessageDialog> create(const std::string& message, bool clearConsoleAtStart = true) {
-        auto dialog = std::make_unique<MessageDialog>();
-        if (dialog->init(message, clearConsoleAtStart)) {
+    static MessageDialog* create(const std::string& message, int outputOptions = ClearConsoleAtStart) {
+        auto dialog = new MessageDialog();
+        if (dialog->init(message, outputOptions)) {
             return dialog;
         }
         return nullptr;
