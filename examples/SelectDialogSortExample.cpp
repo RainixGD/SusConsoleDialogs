@@ -1,4 +1,4 @@
-#include <SusConsoleDialogs/include.h>
+#include <SusConsoleDialogs/SusConsoleDialogs.h>
 #include <iostream>
 #include <vector>
 
